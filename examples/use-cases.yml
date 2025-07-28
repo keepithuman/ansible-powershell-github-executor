@@ -17,7 +17,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/ad-scripts/main/bulk-users.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/ad-scripts/bulk-users.ps1"
         powershell_script_args: "-CSVPath 'C:\\temp\\users.csv'"
 
 # 3. IIS Configuration
@@ -26,7 +26,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/iis-scripts/main/setup-site.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/iis-scripts/setup-site.ps1"
         powershell_script_args: "-SiteName 'MyApp' -Port 443"
 
 # 4. SQL Server Deployment
@@ -35,7 +35,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/sql-scripts/main/deploy.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/sql-scripts/deploy.ps1"
         powershell_script_args: "-Database 'Production' -Version '2.5.0'"
 
 # 5. Exchange/O365 Management
@@ -44,7 +44,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/o365-scripts/main/mailbox-setup.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/o365-scripts/mailbox-setup.ps1"
         powershell_script_args: "-UserPrincipalName 'user@contoso.com'"
 
 # 6. Security Hardening
@@ -53,7 +53,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/security/main/harden.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/security/harden.ps1"
         powershell_verify_checksum: true
         powershell_checksum_value: "your-checksum-here"
 
@@ -63,7 +63,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/deploy/main/deploy-app.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/deploy/deploy-app.ps1"
         powershell_script_args: "-Version '{{ app_version }}' -Environment 'Production'"
 
 # 8. Monitoring Agent Installation
@@ -81,7 +81,7 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/dr/main/validate.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/dr/validate.ps1"
         powershell_enable_audit: true
 
 # 10. Developer Workstation Setup
@@ -90,5 +90,5 @@
   roles:
     - role: ansible-powershell-github-executor
       vars:
-        powershell_script_url: "https://raw.githubusercontent.com/myorg/dev-setup/main/install.ps1"
+        powershell_script_url: "https://raw.githubusercontent.com/keepithuman/enterprise-powershell-scripts/main/dev-setup/install.ps1"
         powershell_script_args: "-Profile 'FullStack'"
