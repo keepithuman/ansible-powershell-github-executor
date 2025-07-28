@@ -1,0 +1,174 @@
+---
+# Test playbook for ansible-powershell-github-executor role
+# This playbook demonstrates various ways to use the role
+
+- name: Test PowerShell GitHub Executor Role
+  hosts: windows_servers
+  gather_facts: yes
+  
+  tasks:
+    - name: Display test information
+      debug:
+        msg: 
+          - "Testing ansible-powershell-github-executor role"
+          - "Target host: {{ inventory_hostname }}"
+          - "Ansible version: {{ ansible_version.full }}"
+
+    - name: Test 1 - Simple script execution without verification
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/PowerShell/PowerShell/master/tools/install-powershell.ps1"
+        powershell_script_args: "-UseMSI -Quiet"
+        powershell_enable_audit: true
+        powershell_cleanup_script: true
+      tags:
+        - simple_test
+
+    - name: Test 2 - Script execution with checksum verification
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
+        powershell_verify_checksum: true
+        powershell_checksum_algorithm: "sha256"
+        # Note: This is an example checksum - replace with actual checksum
+        powershell_checksum_value: "replace_with_actual_checksum_value"
+        powershell_enable_audit: true
+        powershell_execution_timeout: 600
+      tags:
+        - checksum_test
+      ignore_errors: yes  # Since we're using a placeholder checksum
+
+    - name: Test 3 - Script with custom paths and no cleanup
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/PowerShell/PowerShell/master/demos/SystemInventory.ps1"
+        powershell_work_dir: "C:\\Scripts\\Downloads"
+        powershell_audit_log_dir: "C:\\Logs\\Ansible"
+        powershell_script_name: "system-inventory-test.ps1"
+        powershell_cleanup_script: false
+        powershell_execution_policy: "Bypass"
+      tags:
+        - custom_paths_test
+
+    - name: Test 4 - Script with arguments and dev environment
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/PowerShell/PowerShell/master/demos/Apache/Apache.ps1"
+        powershell_script_args: "-Site 'TestSite' -Action 'Status'"
+        powershell_work_dir: "C:\\temp\\ansible-dev"
+        powershell_enable_audit: true
+        powershell_execution_timeout: 120
+      tags:
+        - args_test
+
+    - name: Test 5 - Multiple script executions in sequence
+      block:
+        - name: Execute first script
+          include_role:
+            name: ansible-powershell-github-executor
+          vars:
+            powershell_script_url: "https://raw.githubusercontent.com/PowerShell/PowerShell/master/demos/SystemInventory.ps1"
+            powershell_script_args: "-Quick"
+            powershell_enable_audit: true
+
+        - name: Execute second script
+          include_role:
+            name: ansible-powershell-github-executor
+          vars:
+            powershell_script_url: "https://raw.githubusercontent.com/PowerShell/PowerShell/master/demos/SSHRemoting/sshremoting.ps1"
+            powershell_enable_audit: true
+      tags:
+        - sequence_test
+
+    - name: Read and display audit logs
+      win_find:
+        paths: "{{ powershell_audit_log_dir | default('C:\\ProgramData\\ansible-powershell-logs') }}"
+        patterns: "powershell_execution_{{ inventory_hostname }}_*.json"
+        age: "-1h"
+      register: audit_logs
+      tags:
+        - audit_check
+
+    - name: Display found audit logs
+      debug:
+        msg: "Found {{ audit_logs.files | length }} audit log(s)"
+      when: audit_logs.files is defined
+      tags:
+        - audit_check
+
+    - name: Read latest audit log content
+      win_shell: |
+        $logs = Get-ChildItem "{{ powershell_audit_log_dir | default('C:\\ProgramData\\ansible-powershell-logs') }}" -Filter "*.json" | 
+                Sort-Object LastWriteTime -Descending | 
+                Select-Object -First 1
+        if ($logs) {
+            Get-Content $logs.FullName -Raw
+        }
+      register: latest_audit_log
+      changed_when: false
+      tags:
+        - audit_check
+
+    - name: Display latest audit log
+      debug:
+        var: latest_audit_log.stdout
+      when: latest_audit_log.stdout is defined
+      tags:
+        - audit_check
+
+# Additional test scenarios for error handling
+- name: Test error handling scenarios
+  hosts: windows_servers
+  gather_facts: no
+  
+  tasks:
+    - name: Test with invalid URL (should fail)
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/invalid/repo/main/nonexistent.ps1"
+        powershell_enable_audit: true
+      ignore_errors: yes
+      tags:
+        - error_test
+
+    - name: Test with missing required variable (should fail)
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_args: "-Test"
+      ignore_errors: yes
+      tags:
+        - error_test
+
+# Example of using the role in a real-world scenario
+- name: Real-world example - Configure application
+  hosts: windows_app_servers
+  gather_facts: yes
+  
+  vars:
+    app_config_script_url: "https://raw.githubusercontent.com/mycompany/app-scripts/main/configure-app.ps1"
+    app_environment: "dev"
+    
+  tasks:
+    - name: Configure application using PowerShell script
+      include_role:
+        name: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "{{ app_config_script_url }}"
+        powershell_script_args: >-
+          -Environment {{ app_environment }}
+          -ConfigPath 'C:\\AppConfig'
+          -EnableLogging
+          -Verbose
+        powershell_verify_checksum: "{{ (app_environment == 'prod') | bool }}"
+        powershell_checksum_value: "{{ app_script_checksum | default('') }}"
+        powershell_execution_timeout: 900
+        powershell_enable_audit: true
+        powershell_audit_log_dir: "C:\\AppLogs\\Ansible"
+      tags:
+        - app_config
