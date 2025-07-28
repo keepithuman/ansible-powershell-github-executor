@@ -1,0 +1,9 @@
+---
+# Ansible Galaxy requirements file
+# Install with: ansible-galaxy install -r tests/requirements.yml
+
+collections:
+  - name: ansible.windows
+    version: ">=1.0.0"
+  - name: community.windows
+    version: ">=1.0.0"
