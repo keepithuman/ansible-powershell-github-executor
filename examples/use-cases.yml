@@ -1,0 +1,94 @@
+---
+# MVP Use Cases for ansible-powershell-github-executor
+# Each example shows a minimal working configuration
+
+# 1. Windows Update Management
+- name: Windows Updates
+  hosts: windows_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/microsoft/MSLab/master/Tools/WindowsUpdate.ps1"
+        powershell_script_args: "-All -AcceptAll"
+
+# 2. Active Directory Operations
+- name: AD User Management
+  hosts: domain_controllers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/ad-scripts/main/bulk-users.ps1"
+        powershell_script_args: "-CSVPath 'C:\\temp\\users.csv'"
+
+# 3. IIS Configuration
+- name: Configure IIS
+  hosts: web_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/iis-scripts/main/setup-site.ps1"
+        powershell_script_args: "-SiteName 'MyApp' -Port 443"
+
+# 4. SQL Server Deployment
+- name: Deploy SQL Scripts
+  hosts: sql_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/sql-scripts/main/deploy.ps1"
+        powershell_script_args: "-Database 'Production' -Version '2.5.0'"
+
+# 5. Exchange/O365 Management
+- name: O365 Mailbox Setup
+  hosts: exchange_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/o365-scripts/main/mailbox-setup.ps1"
+        powershell_script_args: "-UserPrincipalName 'user@contoso.com'"
+
+# 6. Security Hardening
+- name: Apply Security Baseline
+  hosts: all_windows
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/security/main/harden.ps1"
+        powershell_verify_checksum: true
+        powershell_checksum_value: "your-checksum-here"
+
+# 7. Application Deployment
+- name: Deploy .NET App
+  hosts: app_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/deploy/main/deploy-app.ps1"
+        powershell_script_args: "-Version '{{ app_version }}' -Environment 'Production'"
+
+# 8. Monitoring Agent Installation
+- name: Install Datadog Agent
+  hosts: windows_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/DataDog/datadog-agent/main/cmd/agent/install.ps1"
+        powershell_script_args: "-apikey '{{ datadog_api_key }}'"
+
+# 9. Disaster Recovery Testing
+- name: DR Validation
+  hosts: dr_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/dr/main/validate.ps1"
+        powershell_enable_audit: true
+
+# 10. Developer Workstation Setup
+- name: Setup Dev Environment
+  hosts: developer_workstations
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/dev-setup/main/install.ps1"
+        powershell_script_args: "-Profile 'FullStack'"
