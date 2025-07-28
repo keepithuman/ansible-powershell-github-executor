@@ -1,0 +1,13 @@
+---
+# Secure script execution with checksum verification
+- hosts: windows_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/scripts/main/configure-app.ps1"
+        powershell_verify_checksum: true
+        powershell_checksum_algorithm: "sha256"
+        powershell_checksum_value: "a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3"
+        powershell_script_args: "-Environment Production -ConfigFile 'C:\\config\\app.json'"
+        powershell_execution_timeout: 600
+        powershell_enable_audit: true

@@ -1,0 +1,8 @@
+---
+# handlers file for ansible-powershell-github-executor
+
+- name: cleanup on failure
+  ansible.windows.win_file:
+    path: "{{ powershell_work_dir }}\\{{ powershell_script_name }}"
+    state: absent
+  failed_when: false

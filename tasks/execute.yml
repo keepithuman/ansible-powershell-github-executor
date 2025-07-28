@@ -1,0 +1,41 @@
+---
+# Script execution tasks
+
+- name: Build PowerShell command
+  ansible.builtin.set_fact:
+    powershell_command: >
+      Set-ExecutionPolicy -ExecutionPolicy {{ powershell_execution_policy }} -Scope Process -Force;
+      & '{{ powershell_work_dir }}\\{{ powershell_script_name }}' {{ powershell_script_args }}
+
+- name: Execute PowerShell script
+  ansible.windows.win_powershell:
+    script: "{{ powershell_command }}"
+  register: script_execution
+  timeout: "{{ powershell_execution_timeout }}"
+  failed_when: false
+
+- name: Check execution status
+  ansible.builtin.fail:
+    msg: "Script execution failed with return code: {{ script_execution.rc }}"
+  when: script_execution.rc != 0
+
+- name: Update audit log with execution results
+  ansible.builtin.set_fact:
+    audit_log_data: "{{ audit_log_data | combine({'execution': {
+      'status': 'success' if script_execution.rc == 0 else 'failed',
+      'return_code': script_execution.rc,
+      'execution_time': script_execution.delta | default('N/A'),
+      'script_args': powershell_script_args,
+      'stdout_lines': script_execution.stdout_lines | default([]),
+      'stderr_lines': script_execution.stderr_lines | default([]),
+      'error_message': script_execution.msg | default('')
+    }}) }}"
+  when: powershell_enable_audit | bool
+
+- name: Display execution output
+  ansible.builtin.debug:
+    msg:
+      - "Script execution completed"
+      - "Return code: {{ script_execution.rc }}"
+      - "Output lines: {{ script_execution.stdout_lines | length }}"
+  when: script_execution.stdout_lines is defined

@@ -1,0 +1,12 @@
+---
+# Execution with custom paths and settings
+- hosts: windows_servers
+  roles:
+    - role: ansible-powershell-github-executor
+      vars:
+        powershell_script_url: "https://raw.githubusercontent.com/myorg/scripts/main/maintenance.ps1"
+        powershell_work_dir: "D:\\Scripts\\Temp"
+        powershell_audit_log_dir: "D:\\Logs\\PowerShell"
+        powershell_script_name: "custom-maintenance.ps1"
+        powershell_cleanup_script: false  # Keep script after execution
+        powershell_execution_policy: "Bypass"

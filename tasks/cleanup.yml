@@ -1,0 +1,34 @@
+---
+# Cleanup tasks
+
+- name: Remove PowerShell script
+  ansible.windows.win_file:
+    path: "{{ powershell_work_dir }}\\{{ powershell_script_name }}"
+    state: absent
+  register: script_removal
+  failed_when: false
+
+- name: Update audit log with cleanup information
+  ansible.builtin.set_fact:
+    audit_log_data: "{{ audit_log_data | combine({
+      'cleanup': {
+        'script_removed': script_removal.changed | default(false),
+        'cleanup_status': 'success' if script_removal.changed | default(false) else 'skipped'
+      },
+      'timestamp_end': ansible_date_time.iso8601
+    }) }}"
+  when: powershell_enable_audit | bool
+
+- name: Write audit log
+  ansible.windows.win_copy:
+    content: "{{ audit_log_data | to_nice_json }}"
+    dest: "{{ powershell_audit_log_dir }}\\{{ _powershell_log_filename }}"
+  when: powershell_enable_audit | bool
+  register: audit_log_write
+
+- name: Confirm audit log creation
+  ansible.builtin.debug:
+    msg: "Audit log written to: {{ powershell_audit_log_dir }}\\{{ _powershell_log_filename }}"
+  when:
+    - powershell_enable_audit | bool
+    - audit_log_write.changed | default(false)

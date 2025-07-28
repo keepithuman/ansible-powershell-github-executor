@@ -1,0 +1,34 @@
+---
+# Checksum verification tasks
+
+- name: Validate checksum value is provided
+  ansible.builtin.assert:
+    that:
+      - powershell_checksum_value is defined
+      - powershell_checksum_value | length > 0
+    fail_msg: "powershell_checksum_value must be provided when verification is enabled"
+    success_msg: "Checksum value validated"
+
+- name: Get file checksum
+  ansible.windows.win_stat:
+    path: "{{ powershell_work_dir }}\\{{ powershell_script_name }}"
+    checksum_algorithm: "{{ powershell_checksum_algorithm }}"
+  register: file_stat
+
+- name: Verify checksum
+  ansible.builtin.assert:
+    that:
+      - file_stat.stat.checksum == powershell_checksum_value
+    fail_msg: "Checksum verification failed! Expected: {{ powershell_checksum_value }}, Got: {{ file_stat.stat.checksum }}"
+    success_msg: "Checksum verified successfully"
+  register: checksum_verification
+
+- name: Update audit log with verification information
+  ansible.builtin.set_fact:
+    audit_log_data: "{{ audit_log_data | combine({'checksum_verification': {
+      'algorithm': powershell_checksum_algorithm,
+      'expected': powershell_checksum_value,
+      'actual': file_stat.stat.checksum,
+      'status': 'verified'
+    }}) }}"
+  when: powershell_enable_audit | bool
